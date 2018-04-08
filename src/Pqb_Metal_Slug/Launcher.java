@@ -20,8 +20,8 @@ public class Launcher extends JPanel{
     public static final int WIDTH = 863;  
     public static final int HEIGHT = 560;  
     //游戏界面固定大小880*605  
-    public static final int FRAME_WIDTH = 880;  
-    public static final int FRAME_HEIGHT = 605;  
+    public static final int FRAME_WIDTH = 863;  
+    public static final int FRAME_HEIGHT = 560;  
     
     public static BufferedImage[] heros = new BufferedImage[8];
     public static BufferedImage[] reverseheros = new BufferedImage[8];
@@ -31,8 +31,14 @@ public class Launcher extends JPanel{
     public static BufferedImage[] second_enemies = new BufferedImage[6];
     public static BufferedImage[] reverse_second_enemies = new BufferedImage[6];
     public static BufferedImage[] enemyAssassinate = new BufferedImage[3];
-    public static BufferedImage background;
+    public static BufferedImage[] enemyDeath = new BufferedImage[5];
+    public static BufferedImage[] reverse_enemyAssassinate = new BufferedImage[3];
+    public static BufferedImage[] tank = new BufferedImage[2];
     public static BufferedImage slug;
+    public static BufferedImage enemyslug;
+    public static BufferedImage background; 
+    public static BufferedImage staterow;
+    public static BufferedImage[] lifenum = new BufferedImage[3];
     public static BufferedImage pause;
     public static BufferedImage start;
     public static BufferedImage gameover;
@@ -51,10 +57,13 @@ public class Launcher extends JPanel{
     
     Boolean isDeath = false; 	//判定一次生命的消失
     Boolean isJumping = false;	//判定是否在跳跃;
+    Boolean Right = false, Left = false, Up = false, Shooting = false;
     State current_state = State.start;
     public Hero hero = new Hero();
     Slug []slugs = {};
+    Slug []enemyslugs = {};
     Enemy []enemies = {};
+    Tank []tanks = {};
     
     //静态区，不将静态变量的初始化置于静态区内报错
     static{  
@@ -108,8 +117,23 @@ public class Launcher extends JPanel{
 		    enemyAssassinate[0] = ImageIO.read(Launcher.class.getResource("/images/EnemyAssassinate0.png"));
 		    enemyAssassinate[1] = ImageIO.read(Launcher.class.getResource("/images/EnemyAssassinate1.png"));
 		    enemyAssassinate[2] = ImageIO.read(Launcher.class.getResource("/images/EnemyAssassinate2.png"));
+		    reverse_enemyAssassinate[0] = ImageIO.read(Launcher.class.getResource("/images/reverseEnemyAssassinate0.png"));
+		    reverse_enemyAssassinate[1] = ImageIO.read(Launcher.class.getResource("/images/reverseEnemyAssassinate1.png"));
+		    reverse_enemyAssassinate[2] = ImageIO.read(Launcher.class.getResource("/images/reverseEnemyAssassinate2.png"));
+		    enemyDeath[0] = ImageIO.read(Launcher.class.getResource("/images/EnemyDeath0.png"));
+		    enemyDeath[1] = ImageIO.read(Launcher.class.getResource("/images/EnemyDeath1.png"));
+		    enemyDeath[2] = ImageIO.read(Launcher.class.getResource("/images/EnemyDeath2.png"));
+		    enemyDeath[3] = ImageIO.read(Launcher.class.getResource("/images/EnemyDeath3.png"));
+		    enemyDeath[4] = ImageIO.read(Launcher.class.getResource("/images/EnemyDeath4.png"));
+		    tank[0] = ImageIO.read(Launcher.class.getResource("/images/tank1.png"));
+		    tank[1] = ImageIO.read(Launcher.class.getResource("/images/tank2.png"));
 		    background = ImageIO.read(Launcher.class.getResource("/images/background.png"));
+		    staterow = ImageIO.read(Launcher.class.getResource("/images/StateRow0.png"));
+		    lifenum[0] = ImageIO.read(Launcher.class.getResource("/images/life_0.png"));
+		    lifenum[1] = ImageIO.read(Launcher.class.getResource("/images/life_1.png"));
+		    lifenum[2] = ImageIO.read(Launcher.class.getResource("/images/life_2.png"));
 		    slug = ImageIO.read(Launcher.class.getResource("/images/slug.png"));
+		    enemyslug = ImageIO.read(Launcher.class.getResource("/images/enemySlug.png"));
 		    /*pause = ImageIO.read(Launcher.class.getResource("pause.png"));*/
 		    start = ImageIO.read(Launcher.class.getResource("/images/start.png"));
 		    gameover = ImageIO.read(Launcher.class.getResource("/images/gameover.png"));
@@ -132,9 +156,14 @@ public class Launcher extends JPanel{
     	final Launcher Iden = new Launcher();
     	frame.add(Iden);
     	frame.setVisible(true);
+    	frame.setResizable(false);
     	Iden.launch();
     	frame.addKeyListener(new KeyAdapter(){
     		public void keyPressed(KeyEvent e) {
+    	        Iden.processParentEvent(e);
+    	    }
+    		
+    		public void keyReleased(KeyEvent e) {
     	        Iden.processParentEvent(e);
     	    }
     	});
@@ -144,6 +173,7 @@ public class Launcher extends JPanel{
     {
     	//设置键盘监听事件
     	KeyAdapter myKeyAdapter = new KeyAdapter(){
+    		
     		@Override
     		public void keyPressed(KeyEvent e)
     		{
@@ -153,48 +183,52 @@ public class Launcher extends JPanel{
     				current_state = State.running;
     			}else if(keycode==KeyEvent.VK_SPACE){	//按下空格键进入暂停状态
     				current_state = State.pause;
-    			}else if(keycode==KeyEvent.VK_D&&current_state==State.running&&!isDeath)		//按下D且状态为Running时英雄向右移动
+    			}else if(keycode==KeyEvent.VK_D)		//按下D且状态为Running时英雄向右移动
     			{
-    				hero.step();
-    				if(!BlockRight())		//只有当右边无阻碍时才能走
-    					hero.moveRight();
-    				hero_state = Hero_State.right_slugs;							//人物往右， 子弹方向往右
-    			}else if(keycode==KeyEvent.VK_A&&current_state==State.running&&!isDeath)		//按下A且状态为Running时英雄向左移动
+    				Right = true;
+    			}else if(keycode==KeyEvent.VK_A)		//按下A且状态为Running时英雄向左移动
     			{
-    				hero.stepReverse();
-    				if(!BlockLeft())		//只有当左边无阻碍时才能走
-    					hero.moveLeft();
-    				hero_state = Hero_State.left_slugs;								//人物往左，子弹方向往左
-    			}else if(keycode==KeyEvent.VK_J&&current_state==State.running)
+    				Left = true;
+    			}else if(keycode==KeyEvent.VK_J&&current_state==State.running&&Shooting==false)
     			{
+    				Shooting = true;
     				Slug []newslug = new Slug[1];
     				if(hero_state == Hero_State.right_slugs)
-    					newslug[0] = new Slug((hero.x_pos+hero.width/2),(hero.y_pos+hero.height/2-10),true);	//子弹方向往右
-    				else if(hero_state == Hero_State.left_slugs)
-    					newslug[0] = new Slug((hero.x_pos+hero.width/2),(hero.y_pos+hero.height/2-10),false);	//子弹方向往左
+    					newslug[0] = new Slug((hero.x_pos+hero.width/2),(hero.y_pos+hero.height/2-10),true, true, 5);	//子弹方向往右, 英雄子弹	
+    				else if(hero_state == Hero_State.left_slugs)	
+    					newslug[0] = new Slug((hero.x_pos+hero.width/2),(hero.y_pos+hero.height/2-10),false, true, 5);	//子弹方向往左， 英雄子弹
     				slugs = Arrays.copyOf(slugs, slugs.length + newslug.length);  
     			    //从newBullets数组中拷贝所有元素到bullets数组末尾  
     			    System.arraycopy(newslug, 0, slugs, slugs.length - newslug.length, newslug.length); 
     			}else if(keycode==KeyEvent.VK_K&&current_state==State.running)
     			{
+    				Up = true;
     				isJumping = true;
-    			}else if(keycode==KeyEvent.VK_D&&keycode==KeyEvent.VK_J&&current_state==State.running&&!isDeath)
+    			}
+    		}
+    		
+    		@Override
+    		public void keyReleased(KeyEvent e)
+    		{	
+    			int keycode = e.getKeyCode();
+    			if(keycode==KeyEvent.VK_D)
     			{
-    				hero.step();
-    				if(!BlockRight())		//只有当右边无阻碍时才能走
-    					hero.moveRight();
-    				hero_state = Hero_State.right_slugs;	
-    				Slug []newslug = new Slug[1];
-    				if(hero_state == Hero_State.right_slugs)
-    					newslug[0] = new Slug((hero.x_pos+hero.width/2),(hero.y_pos+hero.height/2-10),true);	//子弹方向往右
-    				else if(hero_state == Hero_State.left_slugs)
-    					newslug[0] = new Slug((hero.x_pos+hero.width/2),(hero.y_pos+hero.height/2-10),false);	//子弹方向往左
-    				slugs = Arrays.copyOf(slugs, slugs.length + newslug.length);  
-    			    //从newBullets数组中拷贝所有元素到bullets数组末尾  
-    			    System.arraycopy(newslug, 0, slugs, slugs.length - newslug.length, newslug.length); 
+    				Right = false;
+    			}else if(keycode == KeyEvent.VK_A)
+    			{
+    				Left = false;
+    			}
+    			else if(keycode == KeyEvent.VK_K)
+    			{
+    				Up = false;
+    			}else if(keycode == KeyEvent.VK_J)
+    			{
+    				Shooting = false;
     			}
     		}
     	};
+    	
+    	//this.setFocusable(true);
         this.addKeyListener(myKeyAdapter);
         
     	//创建计时器
@@ -209,25 +243,48 @@ public class Launcher extends JPanel{
 				{
 					runTimes++;
 					
-					/*if(runTimes%100==0)
-					{	
-						createAnEnemy();
-					}*/
+		    		if(Right==true&&current_state==State.running&&!isDeath)
+		    		{
+		    			hero.step();
+	    				if(!BlockRight())		//只有当右边无阻碍时才能走
+	    					hero.moveRight();
+	    				hero_state = Hero_State.right_slugs;							//人物往右， 子弹方向往右
+		    		}else if(Left==true&&current_state==State.running&&!isDeath&&!hero.outOfLeftBounds())
+		    		{
+		    			hero.stepReverse();
+	    				if(!BlockLeft())		//只有当左边无阻碍时才能走
+	    					hero.moveLeft();
+	    				hero_state = Hero_State.left_slugs;								//人物往左，子弹方向往左
+		    		}
 					
+		    		if(runTimes%300==0)
+		    			EnemyShoot();
+		    		
 					EnemyStep();
 					
 					moveAllEnemies();
 					
 					moveAllSlugs();
 					
-					SlugHit();
+					SlugHitEnemy();
+					
+					for(int j=0;j<enemies.length;j++)			//检测每个士兵的血量， 若士兵死亡则出现死亡特效
+						if(enemies[j].health_point<=0)
+						{
+							if(enemies[j].Death())
+							{
+								enemies[j] = enemies[enemies.length-1];
+								enemies = Arrays.copyOf(enemies,enemies.length-1);
+							}
+						}
+					
+					SlugHitHero();
 					
 					if(isJumping)
 					{
 						if(hero.Jump())
 						{
 							isJumping = false;
-							System.out.println("jumping");
 							hero.y_pos = hero.Hero_initial_y;
 						}
 					}
@@ -259,6 +316,7 @@ public class Launcher extends JPanel{
     	isJumping = false;
     	hero = new Hero();
     	slugs = new Slug[0];
+    	enemyslugs = new Slug[0];
     	enemies = new Enemy[0];
     	init_enemy();
     }
@@ -272,6 +330,9 @@ public class Launcher extends JPanel{
     public void paint(Graphics g)
     {
     	g.drawImage(background, 0, 0, null);
+    	g.drawImage(staterow,0,0,null);
+    	if(hero.health_point>=1)
+    		g.drawImage(lifenum[hero.health_point-1], 55, 10, null);
     	paintHero(g);
     	paintSlug(g);
     	paintEnemy(g);
@@ -285,17 +346,26 @@ public class Launcher extends JPanel{
     private void init_enemy()
     {
     	Enemy []T_enemies = new Enemy[2];
-    	T_enemies[0] = new Enemy(800,Hero.Hero_initial_y+hero.height-first_enemies[0].getHeight()-10,0,1,false);
+    	T_enemies[0] = new Enemy(790,Hero.Hero_initial_y+hero.height-first_enemies[0].getHeight()+50-tank[0].getHeight(),0,1,false);
     	T_enemies[1] = new Enemy(800,Hero.Hero_initial_y+hero.height-second_enemies[0].getHeight()-10,1,2,false);
     	enemies = Arrays.copyOf(enemies, enemies.length + T_enemies.length);  
 	    //从newBullets数组中拷贝所有元素到bullets数组末尾  
 	    System.arraycopy(T_enemies, 0, enemies, enemies.length - T_enemies.length, T_enemies.length); 
+	    
+	    Tank  []T_tanks = new Tank[1];
+	    T_tanks[0] = new Tank(700,Hero.Hero_initial_y+hero.height-tank[0].getHeight());
+	    tanks = Arrays.copyOf(tanks, tanks.length + T_tanks.length);
+	    System.arraycopy(T_tanks, 0, tanks, tanks.length-T_tanks.length, T_tanks.length);
     }
     
     //显示所有我方子弹
     private void paintSlug(Graphics g) {
 		// TODO 自动生成的方法存根
 		for(Slug slug_:slugs){
+			g.drawImage(slug_.image, slug_.x_pos,slug_.y_pos,null);
+		}
+		
+		for(Slug slug_:enemyslugs){
 			g.drawImage(slug_.image, slug_.x_pos,slug_.y_pos,null);
 		}
 	}
@@ -305,6 +375,9 @@ public class Launcher extends JPanel{
 		// TODO 自动生成的方法存根
 		for(Enemy enemy_:enemies){
 			g.drawImage(enemy_.image, enemy_.x_pos,enemy_.y_pos,null);
+		}
+		for(Tank tank_:tanks){
+			g.drawImage(tank_.image, tank_.x_pos,tank_.y_pos,null);
 		}
 	}
     
@@ -317,6 +390,8 @@ public class Launcher extends JPanel{
     public void moveAllEnemies()
     {
     	for(Enemy enemy_:enemies){
+    		if(enemy_.health_point<=0)
+    			continue;
     		if(enemy_.x_pos>hero.x_pos+hero.width)			//始终朝着英雄方向移动
     		{
     			enemy_.move();
@@ -329,7 +404,10 @@ public class Launcher extends JPanel{
     		}
     		else
     		{
-    			enemy_.Assassinate(); 		//太接近了，敌人用刀刺杀
+    			if(enemy_.x_pos>hero.x_pos)
+    				enemy_.Assassinate(false); 		//太接近了，敌人用刀刺杀
+    			else
+    				enemy_.Assassinate(true);
     			if(!isDeath)				//英雄死亡不再计数
     				enemy_.AssassinatedCount2++;
     			//System.out.println(enemy_.AssassinatedCount2);
@@ -351,12 +429,31 @@ public class Launcher extends JPanel{
     	for(Enemy enemy_:enemies){
 			enemy_.step();
 		}
+    	for(Tank tank_:tanks){
+			tank_.step();
+		}
+    }
+    
+    //持枪敌人射击
+    public void EnemyShoot()
+    {
+    	for(Enemy enemy_:enemies){
+    		if(Math.abs(enemy_.x_pos - hero.x_pos)<300)
+    			continue;
+    		Slug []T_enemyslugs = enemy_.shoot();
+    		enemyslugs = Arrays.copyOf(enemyslugs, enemyslugs.length + T_enemyslugs.length);
+    	    System.arraycopy(T_enemyslugs, 0, enemyslugs, enemyslugs.length-T_enemyslugs.length, T_enemyslugs.length);
+    	}
     }
     
 	//所有子弹的移动
 	public void moveAllSlugs()
 	{
 		for(Slug slug_:slugs){
+			slug_.step();
+		}
+		
+		for(Slug slug_:enemyslugs){
 			slug_.step();
 		}
 	}
@@ -375,7 +472,7 @@ public class Launcher extends JPanel{
 	public boolean BlockRight()
 	{
 		for(Enemy enemy_:enemies)
-			if((enemy_.x_pos>=hero.x_pos)&&(enemy_.x_pos-hero.x_pos<10))
+			if((enemy_.x_pos>=hero.x_pos)&&(enemy_.x_pos-hero.x_pos<10)&&hero.y_pos+hero.height>=enemy_.y_pos)		//第三个判别式判定我方是否跳跃
 				return true;
 		return false;
 	}
@@ -383,13 +480,13 @@ public class Launcher extends JPanel{
 	public boolean BlockLeft()
 	{
 		for(Enemy enemy_:enemies)
-			if((hero.x_pos>enemy_.x_pos)&&(hero.x_pos-enemy_.x_pos<10))
+			if((hero.x_pos>enemy_.x_pos)&&(hero.x_pos-enemy_.x_pos<10)&&hero.y_pos+hero.height>=enemy_.y_pos)
 				return true;
 		return false;
 	}
 	
 	//检查子弹和敌人碰撞
-	public void SlugHit()
+	public void SlugHitEnemy()
 	{
 		for(int i=0;i<slugs.length;i++)
 		{
@@ -399,11 +496,14 @@ public class Launcher extends JPanel{
 				{
 					//分别使用敌人和子弹的最后一个实体来填补碰撞位置
 					enemies[j].health_point--;
-					if(enemies[j].health_point==0)
+					/*if(enemies[j].health_point==0)
 					{
-						enemies[j] = enemies[enemies.length-1];
-						enemies = Arrays.copyOf(enemies,enemies.length-1);
-					}
+						if(enemies[j].Death())
+						{
+							enemies[j] = enemies[enemies.length-1];
+							enemies = Arrays.copyOf(enemies,enemies.length-1);
+						}
+					}*/
 					
 					slugs[i] = slugs[slugs.length-1];
 					slugs = Arrays.copyOf(slugs, slugs.length-1);
@@ -412,9 +512,30 @@ public class Launcher extends JPanel{
 					break;   //显然一个子弹不会碰到两个敌人
 				}
 			}
-		}
-			
+		}	
 	}
+	
+	//检查子弹和英雄碰撞
+	public void SlugHitHero()
+	{
+		for(int i=0;i<enemyslugs.length;i++)
+		{
+				if(Substance.hit(enemyslugs[i], hero))
+				{				
+					if(hero.health_point>0)
+					{
+						hero.health_point--;
+						isDeath = true;
+					}
+					enemyslugs[i] = enemyslugs[enemyslugs.length-1];
+					enemyslugs = Arrays.copyOf(enemyslugs, enemyslugs.length-1);
+					
+					break;   //显然一个子弹不会碰到两个敌人
+				}
+		}
+	}
+	
+	
 	
 	
 	//检查所有敌人和子弹是否越界
@@ -440,6 +561,16 @@ public class Launcher extends JPanel{
 			}
 		}
 		slugs = Arrays.copyOf(SlugLives,index);
+		
+		SlugLives = new Slug[enemyslugs.length];
+		index = 0;
+		for(Slug slug_:enemyslugs){
+			if(!slug_.outOfRightBounds()&&!slug_.outOfLeftBounds())
+			{
+				SlugLives[index++] = slug_;
+			}
+		}
+		enemyslugs = Arrays.copyOf(SlugLives,index);
 	}
 	
 }

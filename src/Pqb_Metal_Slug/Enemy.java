@@ -1,8 +1,11 @@
 package Pqb_Metal_Slug;
 
 import java.awt.image.BufferedImage;
+import java.util.Random;
 
 public class Enemy extends Substance{
+	
+	int initial_y_pos;
 	
 	int speed;
 	
@@ -11,6 +14,8 @@ public class Enemy extends Substance{
 	int AssassinatedCount = 0;   //刺杀动画计数器
 	
 	int AssassinatedCount2 = 0;  //刺杀判定计数器
+	
+	int death_image = -1;
 	
 	protected boolean direction;
 	
@@ -21,6 +26,7 @@ public class Enemy extends Substance{
 	public Enemy(int x, int y, int _speed, int _enemy_kind, boolean _direction){
 		x_pos = x;
 		y_pos = y;
+		initial_y_pos = y;
 		enemy_kind = _enemy_kind;
 		if(enemy_kind == 1)
 			image = Launcher.first_enemies[0];
@@ -42,7 +48,10 @@ public class Enemy extends Substance{
 		{
 			AssassinatedCount++;
 			cur_image = (cur_image+1)%240;
-			image = Launcher.enemyAssassinate[cur_image/80];
+			if(direction)
+				image = Launcher.reverse_enemyAssassinate[cur_image/80];
+			else
+				image = Launcher.enemyAssassinate[cur_image/80];
 			if(AssassinatedCount==240)
 			{
 				AssassinatedCount = 0;
@@ -67,9 +76,31 @@ public class Enemy extends Substance{
 		if(enemy_kind == 2)	//属于第二种士兵
 		{
 			if(assassinated==0)			//刺杀时停留原地
-				x_pos = x_pos - speed;
+			{
+				Random r = new Random();
+				Random s = new Random(10);
+				if(s.nextInt(2)==1)
+					x_pos = x_pos - r.nextInt(speed+1);;
+			}
 			direction = false;
 		}
+	}
+	
+	public Slug[] shoot()
+	{
+		if(enemy_kind == 1)				//第一种士兵不会射击
+			return new Slug[0];
+		Random r = new Random();
+		if(r.nextInt(2)==1)
+		{
+			Slug []slugs = new Slug[1];
+			if(direction==true)
+				slugs[0] = new Slug((x_pos+width/2)+50,(y_pos+height/2-10),true, false, 2);
+			else
+				slugs[0] = new Slug((x_pos+width/2)-50,(y_pos+height/2-10),false, false, 2);
+			return slugs;
+		}
+		return new Slug[0];
 	}
 	
 	public void moveReverse()
@@ -77,14 +108,18 @@ public class Enemy extends Substance{
 		if(enemy_kind == 2)	//属于第二种士兵
 		{
 			if(assassinated==0)		
-				x_pos = x_pos + speed;
+			{
+				Random r = new Random();
+				x_pos = x_pos + r.nextInt(speed+1);;
+			}
 			direction = true;
 		}
 	}
 	
-	public void Assassinate()
+	public void Assassinate(boolean ass_direction)
 	{
 		assassinated = 1;
+		direction = ass_direction;
 		if(AssassinatedCount==0)
 		{
 			cur_image = 0;
@@ -94,6 +129,16 @@ public class Enemy extends Substance{
 	public void AssassinateReverse()
 	{
 		assassinated = -1;
+	}
+	
+	public boolean Death()
+	{
+		death_image = (death_image+1)%100;
+		image = Launcher.enemyDeath[death_image/20];
+		this.y_pos = initial_y_pos + height - image.getHeight()-10;
+		if(death_image==99)
+			return true;
+		return false;
 	}
 
 	@Override

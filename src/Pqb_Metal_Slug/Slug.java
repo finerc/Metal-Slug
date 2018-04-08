@@ -3,19 +3,23 @@ package Pqb_Metal_Slug;
 import Pqb_Metal_Slug.Substance;;
 
 public class Slug extends Substance{
-	static int speed = 20;
+	int speed;
 	
 	protected boolean direction;		//direction = true的话子弹往右， direction =false的话子弹往左
 	
-	public Slug(int x,int y, boolean _direction)
+	public Slug(int x,int y, boolean _direction, boolean Kinds, int _speed) 	//true为英雄子弹，false为敌人子弹
 	{
 		x_pos = x;
 		y_pos = y;
-		image = Launcher.slug;
+		if(Kinds==true)
+			image = Launcher.slug;
+		else
+			image = Launcher.enemyslug;
 		width = image.getWidth();
 		height = image.getHeight();
 		health_point = 1;
 		direction = _direction;
+		speed = _speed;
 	}
 
 	@Override

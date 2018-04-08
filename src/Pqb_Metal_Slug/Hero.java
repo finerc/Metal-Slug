@@ -6,7 +6,7 @@ public class Hero extends Substance{
 	
 	public static final int Hero_initial_y = 400;
 	
-	int speed = 10;
+	int speed = 2;
 	
 	int cur_image = -1;
 	
@@ -30,14 +30,14 @@ public class Hero extends Substance{
 	@Override
 	public void step() {
 		// TODO 自动生成的方法存根
-		cur_image = (cur_image+1)%16;
-		image = Launcher.heros[cur_image/2];
+		cur_image = (cur_image+1)%80;
+		image = Launcher.heros[cur_image/10];
 	}
 	
 	public void stepReverse() {
 		// TODO 自动生成的方法存根
-		cur_image = (cur_image+1)%16;
-		image = Launcher.reverseheros[cur_image/2];
+		cur_image = (cur_image+1)%80;
+		image = Launcher.reverseheros[cur_image/10];
 	}
 	
 	public void revive()
@@ -59,7 +59,7 @@ public class Hero extends Substance{
 		return false;
 	}
 	
-	public boolean Jump()
+	public boolean Jump()		//英雄跳跃特效
 	{
 		jump_image = (jump_image+1)%80;
 		image = Launcher.heroJump[jump_image/16];
@@ -69,7 +69,42 @@ public class Hero extends Substance{
 			this.y_pos = Hero_initial_y-70;
 		else if(jump_image/16==2)
 			this.y_pos = Hero_initial_y-100;
-		System.out.println(jump_image);
+		if(jump_image==79)
+		{
+			cur_image = 0;
+			image = Launcher.heros[cur_image/2];
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean RightJump()
+	{
+		jump_image = (jump_image+1)%80;
+		image = Launcher.heroJump[jump_image/16];
+		switch(jump_image/16)
+		{
+		case 0:
+			this.y_pos = Hero_initial_y-30;
+			this.x_pos+=20;
+			break;
+		case 1:
+			this.y_pos = Hero_initial_y-70;
+			this.x_pos+=40;
+			break;
+		case 2:
+			this.y_pos = Hero_initial_y-100;
+			this.x_pos+=60;
+			break;
+		case 3:
+			this.y_pos = Hero_initial_y-70;
+			this.x_pos+=80;
+			break;
+		case 4:
+			this.y_pos = Hero_initial_y-30;
+			this.x_pos+=100;
+			break;
+		}
 		if(jump_image==79)
 		{
 			cur_image = 0;
@@ -93,7 +128,7 @@ public class Hero extends Substance{
 	@Override
 	public boolean outOfLeftBounds() {
 		// TODO 自动生成的方法存根
-		return false;
+		return x_pos<=0;
 	}
 
 	@Override
