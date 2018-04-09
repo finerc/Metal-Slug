@@ -1,6 +1,5 @@
 package Pqb_Metal_Slug;
 
-import java.awt.image.BufferedImage;
 import java.util.Random;
 
 public class Enemy extends Substance{
@@ -35,7 +34,7 @@ public class Enemy extends Substance{
 		width = image.getWidth();
 		height = image.getHeight();
 		cur_image = 0;
-		health_point = 3;
+		health_point = 20;
 		speed = _speed;
 		direction = _direction;		
 		assassinated = 0;		//一开始不刺杀
@@ -95,9 +94,9 @@ public class Enemy extends Substance{
 		{
 			Slug []slugs = new Slug[1];
 			if(direction==true)
-				slugs[0] = new Slug((x_pos+width/2)+50,(y_pos+height/2-10),true, false, 2);
+				slugs[0] = new Slug((x_pos+width/2)+50,(y_pos+height/2-10),true, false, 1);
 			else
-				slugs[0] = new Slug((x_pos+width/2)-50,(y_pos+height/2-10),false, false, 2);
+				slugs[0] = new Slug((x_pos+width/2)-50,(y_pos+height/2-10),false, false, 1);
 			return slugs;
 		}
 		return new Slug[0];

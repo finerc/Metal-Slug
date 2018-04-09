@@ -14,6 +14,10 @@ public class Hero extends Substance{
 	
 	int jump_image = -1;
 	
+	int squat_image = -1;
+	
+	boolean isSquating = false;
+	
 	
 	
 	public Hero(){
@@ -29,15 +33,29 @@ public class Hero extends Substance{
 	//英雄走路的动画（8张图切换），在Launcher中10ms刷新一次，因此在这里再*10即100ms刷新一次
 	@Override
 	public void step() {
-		// TODO 自动生成的方法存根
-		cur_image = (cur_image+1)%80;
-		image = Launcher.heros[cur_image/10];
+		 //TODO 自动生成的方法存根
+		if(!isSquating)
+		{
+			cur_image = (cur_image+1)%80;
+			image = Launcher.heros[cur_image/10];
+		}else 
+		{
+			squat_image = (squat_image+1)%50;
+			image = Launcher.heroSquat[squat_image/10];
+		}
 	}
 	
 	public void stepReverse() {
-		// TODO 自动生成的方法存根
-		cur_image = (cur_image+1)%80;
-		image = Launcher.reverseheros[cur_image/10];
+		 //TODO 自动生成的方法存根
+		if(!isSquating)
+		{
+			cur_image = (cur_image+1)%80;
+			image = Launcher.reverseheros[cur_image/10];
+		}else 
+		{
+			squat_image = (squat_image+1)%50;
+			image = Launcher.reverseheroSquat[squat_image/10];
+		}
 	}
 	
 	public void revive()
@@ -61,8 +79,8 @@ public class Hero extends Substance{
 	
 	public boolean Jump()		//英雄跳跃特效
 	{
-		jump_image = (jump_image+1)%80;
-		image = Launcher.heroJump[jump_image/16];
+		jump_image = (jump_image+1)%100;
+		image = Launcher.heroJump[jump_image/20];
 		if(jump_image/16==0||jump_image/16==4)
 			this.y_pos = Hero_initial_y-30;
 		else if(jump_image/16==1||jump_image/16==3)
@@ -80,28 +98,28 @@ public class Hero extends Substance{
 	
 	public boolean RightJump()
 	{
-		jump_image = (jump_image+1)%80;
-		image = Launcher.heroJump[jump_image/16];
+		jump_image = (jump_image+1)%100;
+		image = Launcher.heroJump[jump_image/20];
 		switch(jump_image/16)
 		{
 		case 0:
-			this.y_pos = Hero_initial_y-30;
+			this.y_pos = Hero_initial_y-50;
 			this.x_pos+=20;
 			break;
 		case 1:
-			this.y_pos = Hero_initial_y-70;
+			this.y_pos = Hero_initial_y-90;
 			this.x_pos+=40;
 			break;
 		case 2:
-			this.y_pos = Hero_initial_y-100;
+			this.y_pos = Hero_initial_y-120;
 			this.x_pos+=60;
 			break;
 		case 3:
-			this.y_pos = Hero_initial_y-70;
+			this.y_pos = Hero_initial_y-90;
 			this.x_pos+=80;
 			break;
 		case 4:
-			this.y_pos = Hero_initial_y-30;
+			this.y_pos = Hero_initial_y-50;
 			this.x_pos+=100;
 			break;
 		}
@@ -117,12 +135,18 @@ public class Hero extends Substance{
 	//控制英雄左右移动的方法，speed参数可控
 	public void moveRight()
 	{
-		x_pos = x_pos + speed;
+		if(!isSquating)
+			x_pos = x_pos + speed;
+		else
+			x_pos = x_pos + speed/2;
 	}
 	
 	public void moveLeft()
 	{
-		x_pos = x_pos - speed;
+		if(!isSquating)
+			x_pos = x_pos - speed;
+		else
+			x_pos = x_pos - speed/2;
 	}
 
 	@Override

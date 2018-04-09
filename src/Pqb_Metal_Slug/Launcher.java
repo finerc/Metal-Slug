@@ -27,6 +27,8 @@ public class Launcher extends JPanel{
     public static BufferedImage[] reverseheros = new BufferedImage[8];
     public static BufferedImage[] heroDeath = new BufferedImage[11];
     public static BufferedImage[] heroJump = new BufferedImage[5];
+    public static BufferedImage[] heroSquat = new BufferedImage[5];
+    public static BufferedImage[] reverseheroSquat = new BufferedImage[5];
     public static BufferedImage[] first_enemies = new BufferedImage[2];
     public static BufferedImage[] second_enemies = new BufferedImage[6];
     public static BufferedImage[] reverse_second_enemies = new BufferedImage[6];
@@ -100,6 +102,16 @@ public class Launcher extends JPanel{
 		    heroJump[2] = ImageIO.read(Launcher.class.getResource("/images/HeroJump2.png"));
 		    heroJump[3] = ImageIO.read(Launcher.class.getResource("/images/HeroJump3.png"));
 		    heroJump[4] = ImageIO.read(Launcher.class.getResource("/images/HeroJump4.png"));
+		    heroSquat[0] = ImageIO.read(Launcher.class.getResource("/images/HeroSquat1.png"));
+		    heroSquat[1] = ImageIO.read(Launcher.class.getResource("/images/HeroSquat2.png"));
+		    heroSquat[2] = ImageIO.read(Launcher.class.getResource("/images/HeroSquat3.png"));
+		    heroSquat[3] = ImageIO.read(Launcher.class.getResource("/images/HeroSquat4.png"));
+		    heroSquat[4] = ImageIO.read(Launcher.class.getResource("/images/HeroSquat5.png"));
+		    reverseheroSquat[0] = ImageIO.read(Launcher.class.getResource("/images/reverseHeroSquat1.png"));
+		    reverseheroSquat[1] = ImageIO.read(Launcher.class.getResource("/images/reverseHeroSquat2.png"));
+		    reverseheroSquat[2] = ImageIO.read(Launcher.class.getResource("/images/reverseHeroSquat3.png"));
+		    reverseheroSquat[3] = ImageIO.read(Launcher.class.getResource("/images/reverseHeroSquat4.png"));
+		    reverseheroSquat[4] = ImageIO.read(Launcher.class.getResource("/images/reverseHeroSquat5.png"));
 		    first_enemies[0]  = ImageIO.read(Launcher.class.getResource("/images/enemy_1_0.png"));
 		    first_enemies[1]  = ImageIO.read(Launcher.class.getResource("/images/enemy_1_1.png"));
 		    second_enemies[0]  = ImageIO.read(Launcher.class.getResource("/images/enemy_2_-2.png"));
@@ -181,15 +193,13 @@ public class Launcher extends JPanel{
     			if(keycode==KeyEvent.VK_ENTER&&current_state!=State.running){			//按下回车键进入running状态
     				init_data();
     				current_state = State.running;
-    			}else if(keycode==KeyEvent.VK_SPACE){	//按下空格键进入暂停状态
-    				current_state = State.pause;
     			}else if(keycode==KeyEvent.VK_D)		//按下D且状态为Running时英雄向右移动
     			{
     				Right = true;
     			}else if(keycode==KeyEvent.VK_A)		//按下A且状态为Running时英雄向左移动
     			{
     				Left = true;
-    			}else if(keycode==KeyEvent.VK_J&&current_state==State.running&&Shooting==false)
+    			}else if(keycode==KeyEvent.VK_J&&current_state==State.running&&Shooting==false&&!isDeath)
     			{
     				Shooting = true;
     				Slug []newslug = new Slug[1];
@@ -204,6 +214,11 @@ public class Launcher extends JPanel{
     			{
     				Up = true;
     				isJumping = true;
+    			}else if(keycode==KeyEvent.VK_S&&current_state==State.running)
+    			{
+    				hero.isSquating = true;
+    				hero.y_pos = hero.Hero_initial_y + 30;
+    				hero.step(); 				
     			}
     		}
     		
@@ -224,6 +239,11 @@ public class Launcher extends JPanel{
     			}else if(keycode == KeyEvent.VK_J)
     			{
     				Shooting = false;
+    			}else if(keycode==KeyEvent.VK_S)
+    			{
+    				hero.isSquating = false;
+    				hero.y_pos = hero.Hero_initial_y;
+    				hero.step();
     			}
     		}
     	};
@@ -496,14 +516,6 @@ public class Launcher extends JPanel{
 				{
 					//分别使用敌人和子弹的最后一个实体来填补碰撞位置
 					enemies[j].health_point--;
-					/*if(enemies[j].health_point==0)
-					{
-						if(enemies[j].Death())
-						{
-							enemies[j] = enemies[enemies.length-1];
-							enemies = Arrays.copyOf(enemies,enemies.length-1);
-						}
-					}*/
 					
 					slugs[i] = slugs[slugs.length-1];
 					slugs = Arrays.copyOf(slugs, slugs.length-1);
