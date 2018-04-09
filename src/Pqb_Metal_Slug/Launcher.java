@@ -277,7 +277,7 @@ public class Launcher extends JPanel{
 	    				hero_state = Hero_State.left_slugs;								//人物往左，子弹方向往左
 		    		}
 					
-		    		if(runTimes%300==0)
+		    		if(runTimes%500==0)
 		    			EnemyShoot();
 		    		
 					EnemyStep();
@@ -458,7 +458,7 @@ public class Launcher extends JPanel{
     public void EnemyShoot()
     {
     	for(Enemy enemy_:enemies){
-    		if(Math.abs(enemy_.x_pos - hero.x_pos)<300)
+    		if(Math.abs(enemy_.x_pos - hero.x_pos)<200)
     			continue;
     		Slug []T_enemyslugs = enemy_.shoot();
     		enemyslugs = Arrays.copyOf(enemyslugs, enemyslugs.length + T_enemyslugs.length);

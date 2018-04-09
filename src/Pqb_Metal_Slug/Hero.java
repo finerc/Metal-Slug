@@ -79,14 +79,14 @@ public class Hero extends Substance{
 	
 	public boolean Jump()		//Ó¢ÐÛÌøÔ¾ÌØÐ§
 	{
-		jump_image = (jump_image+1)%100;
-		image = Launcher.heroJump[jump_image/20];
+		jump_image = (jump_image+1)%80;
+		image = Launcher.heroJump[jump_image/16];
 		if(jump_image/16==0||jump_image/16==4)
-			this.y_pos = Hero_initial_y-30;
+			this.y_pos = Hero_initial_y-50;
 		else if(jump_image/16==1||jump_image/16==3)
-			this.y_pos = Hero_initial_y-70;
+			this.y_pos = Hero_initial_y-90;
 		else if(jump_image/16==2)
-			this.y_pos = Hero_initial_y-100;
+			this.y_pos = Hero_initial_y-140;
 		if(jump_image==79)
 		{
 			cur_image = 0;
@@ -104,23 +104,23 @@ public class Hero extends Substance{
 		{
 		case 0:
 			this.y_pos = Hero_initial_y-50;
-			this.x_pos+=20;
+			this.x_pos+=0;
 			break;
 		case 1:
 			this.y_pos = Hero_initial_y-90;
-			this.x_pos+=40;
+			this.x_pos+=0;
 			break;
 		case 2:
 			this.y_pos = Hero_initial_y-120;
-			this.x_pos+=60;
+			this.x_pos+=0;
 			break;
 		case 3:
 			this.y_pos = Hero_initial_y-90;
-			this.x_pos+=80;
+			this.x_pos+=0;
 			break;
 		case 4:
 			this.y_pos = Hero_initial_y-50;
-			this.x_pos+=100;
+			this.x_pos+=0;
 			break;
 		}
 		if(jump_image==79)
